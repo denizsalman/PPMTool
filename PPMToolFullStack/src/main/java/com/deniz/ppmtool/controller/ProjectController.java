@@ -26,19 +26,17 @@ public class ProjectController {
 	@Autowired
 	private ProjectService projectService;
 	
+	@Autowired
+	private MapValidationError mapValidationError;
+	
 	@PostMapping
 	public ResponseEntity<?> addProject(@Valid @RequestBody Project project, 
 			BindingResult bindingResult) {
 		
-		if (bindingResult.hasErrors()) {
-			Map<String, String> errorMap = new HashMap<>();
-			
-			for (FieldError error : bindingResult.getFieldErrors()) {
-				errorMap.put(error.getField(), error.getDefaultMessage());
-			}
-			
-			return new ResponseEntity<Map<String, String>>(errorMap, 
-					HttpStatus.BAD_REQUEST);
+		ResponseEntity<?> errorMap = mapValidationError.mapValidationService(bindingResult);
+		
+		if (errorMap != null) {
+			return errorMap;
 		}
 		
 		projectService.saveOrUpdate(project);
